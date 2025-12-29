@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Калькулятор зарплаты учителя РФ</title>
+    <!-- Подключаем Bootstrap CSS для привлекательного интерфейса -->
+    <link href="stackpath.bootstrapcdn.com" rel="stylesheet">
+    <style>
+        body { background-color: #e9ecef; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .calculator-container { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 450px; }
+        h2 { color: #0056b3; text-align: center; margin-bottom: 20px; }
+        .result-box { margin-top: 20px; padding: 20px; background: #d4edda; border-color: #c3e6cb; color: #155724; border-radius: 5px; font-weight: bold; text-align: center; font-size: 1.2rem; }
+    </style>
+</head>
+<body>
+
+<div class="calculator-container">
+    <h2>Калькулятор зарплаты Учителя</h2>
+    
+    <div class="form-group">
+        <label for="regionSelect">**Выберите регион РФ:**</label>
+        <select id="regionSelect" class="form-control" onchange="updateBaseSalary()">
+            <!-- Примеры регионов с примерными базовыми окладами (средние значения, могут меняться) и региональными коэффициентами -->
+            <option value='{"base": 100000, "coef": 1.0}'>Москва (от 100 т.р.)</option>
+            <option value='{"base": 70000, "coef": 1.0}'>Санкт-Петербург (от 70 т.р.)</option>
+            <option value='{"base": 40000, "coef": 1.0}'>Прочие города (от 30-50 т.р.)</option>
+            <!-- Добавьте другие регионы по необходимости -->
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="baseSalaryInput">**Базовый оклад (за 18 часов), ₽:**</label>
+        <input type="number" id="baseSalaryInput" class="form-control" value="100000">
+    </div>
+
+    <div class="form-group">
+        <label for="hoursInput">**Учебная нагрузка (часов в неделю):**</label>
+        <input type="number" id="hoursInput" class="form-control" value="18">
+    </div>
+
+    <div class="form-group">
+        <label for="categorySelect">**Квалификационная категория:**</label>
+        <select id="categorySelect" class="form-control">
+            <option value="1">Без категории</option>
+            <option value="1.15">Первая (+15%)</option>
+            <option value="1.3">Высшая (+30%)</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="experienceSelect">**Стаж работы:**</label>
+        <select id="experienceSelect" class="form-control">
+            <option value="1">До 2 лет (0%)</option>
+            <option value="1.1">От 2 до 5 лет (+10%)</option>
+            <option value="1.2">От 5 до 10 лет (+20%)</option>
+            <option value="1.3">Свыше 10 лет (+30%)</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="bonusInput">**Прочие доплаты (руб):**</label>
+        <input type="number" id="bonusInput" class="form-control" value="0">
+    </div>
+
+    <button onclick="calculateSalary()" class="btn btn-success btn-block">Рассчитать зарплату</button>
+
+    <div class="result-box" id="totalResult">
+        Итого: 0 ₽
+    </div>
+</div>
+
+<!-- Подключаем Bootstrap JS и зависимости (Popper.js, jQuery) -->
+<script src="code.jquery.com"></script>
+<script src="cdn.jsdelivr.net"></script>
+<script src="stackpath.bootstrapcdn.com"></script>
+
+<script>
+    function updateBaseSalary() {
+        const select = document.getElementById('regionSelect');
+        const selectedOption = JSON.parse(select.value);
+        document.getElementById('baseSalaryInput').value = selectedOption.base;
+    }
+
+    function calculateSalary() {
+        // Получаем значения из полей
+        const baseSalary = parseFloat(document.getElementById('baseSalaryInput').value) || 0;
+        const hours = parseFloat(document.getElementById('hoursInput').value) || 0;
+        const categoryK = parseFloat(document.getElementById('categorySelect').value);
+        const experienceK = parseFloat(document.getElementById('experienceSelect').value);
+        const bonus = parseFloat(document.getElementById('bonusInput').value) || 0;
+
+        // Логика расчета:
+        // 1. Считаем ставку с учетом нагрузки (стандартная ставка — 18 часов)
+        let salaryByHours = (baseSalary / 18) * hours;
+        
+        // 2. Применяем коэффициенты категории и стажа
+        let calculatedSalary = salaryByHours * categoryK * experienceK;
+        
+        // 3. Добавляем фиксированные бонусы и вычитаем НДФЛ (13%)
+        let totalBeforeTax = calculatedSalary + bonus;
+        let totalAfterTax = totalBeforeTax * 0.87;
+
+        // Вывод результата
+        document.getElementById('totalResult').innerHTML = 
+            `**На руки (после НДФЛ):** <br> <span style="font-size: 28px;">${Math.round(totalAfterTax).toLocaleString()} ₽</span>`;
+    }
+
+    // Запускаем расчет и обновление при загрузке страницы
+    window.onload = () => {
+        updateBaseSalary();
+        calculateSalary();
+    };
+</script>
+
+</body>
+</html>
